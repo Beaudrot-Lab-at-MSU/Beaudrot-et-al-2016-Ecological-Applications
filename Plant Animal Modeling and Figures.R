@@ -1,4 +1,5 @@
 # Modeling terrestrial vertebrate species richness and functional diversity as a function of site level vegetation properties and carbon storage
+rm(list=ls())
 
 #Load plant covariates from csv file
 plot.VGmean <- read.csv(file="PlantDiversityCalculations.csv")
@@ -99,31 +100,6 @@ panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
   text(0.5, 0.5, txt, cex = cex.cor * r)
 }
 
-## VISUALIZE PREDICTOR CORRELATIONS
-
-pairs(plot.VGmean[,2:12], lower.panel = panel.smooth, upper.panel = panel.cor)
-
-pdf(file="PAIRS_Vegetation.pdf")
-pairs(plot.VGmean[,2:12], lower.panel = panel.smooth, upper.panel = panel.cor)
-dev.off()
-
-Examine <- as.data.frame(cbind(Mdata$CT.median, Mdata$CT.FDisMedian, Mdata$Shannon.Index,  Mdata$V.Cstorage2, MData$V.TShan, Mdata$V.NStemsT,  Mdata$Elev.Mean, Mdata$Elev.CV, Mdata$ForestLossZOI, Mdata$Latitude, Mdata$PA_area, Mdata$WC_Bio12))
-names(Examine) <- c("SpRichness", "FuncDiv", "TaxonDiv", "Carbon", "Tree Diversity", "Stem Density",  "Elev.Mean", "Elev.CV", "ForestLoss", "Latitude", "PA Size", "Rainfall")
-pairs(Examine, lower.panel = panel.smooth, upper.panel = panel.cor)
-
-# VISUALIZE species richness across sites
-# SPECIES RICHNESS
-library("fields")
-set.panel(2,3)
-par(mar=c(2,2,1,1))
-hist(Mdata$CT.mean, main="Mean")
-hist(Mdata$CT.median, main="Median")
-hist(Mdata$CT.mode, main="Mode")
-boxplot(Mdata$CT.mean~Mdata$Continent, ylim=c(-1,1))
-boxplot(Mdata$CT.median~Mdata$Continent, ylim=c(10,50))
-boxplot(Mdata$CT.mode~Mdata$Continent, ylim=c(-1,1))
-set.panel()
-
 ###### MODEL Terrestrial Vertebrate SPECIES RICHNESS
 
 library(lme4)
@@ -178,14 +154,6 @@ Shan95output <- model.sel(Shanconfset.95p)
 ShanAlloutput <- model.sel(allShan.dredge)
 summary(allShan)
 
-#confint(allShan)
-
-fitShanbest <- lm(Shannon.Index ~ Elev.CV, weights=(1/(Shannon.Index.sd^2)), data=Mdata)
-fitShanbest2 <- lm(Shannon.Index ~ Elev.CV + V.NStemsT + V.TShan + Asia, data=Mdata)
-summary(fitShanbest2)
-plot(resid(fitShan), Mdata$CT.median, xlab="Global Model Residuals", ylab="Predicted Taxonomic Diversity")
-hist(resid(fitShan), main="", xlab="Global Model Residuals")
-
 
 
 ############ Create Plots #########
@@ -221,8 +189,8 @@ set.panel()
 pdf(file="TEAM_Map_14Sites.pdf")
 par(mar=c(0,0,0,0))
 map('world', interior=FALSE, xlim=c(-132, 155), ylim=c(-60, 37), col="gray60")
-points(LatLon$Longitude, LatLon$Latitude, col="green4", pch=c(1:14), cex=1)
-legend(x=-132, y=37, legend=LatLon$Site.Code, pch=c(1:14), border="transparent", col="green4", bg="white", box.col="transparent", title="TEAM Sites", title.adj=0.12, cex=0.66)
+points(LatLon$Longitude, LatLon$Latitude, col="black", pch=c(16), cex=1)
+#legend(x=-132, y=37, legend=LatLon$Site.Code, pch=c(1:14), border="transparent", col="green4", bg="white", box.col="transparent", title="TEAM Sites", title.adj=0.12, cex=0.66)
 dev.off()
 
 
@@ -304,7 +272,7 @@ CoefficientPlot <- function(models, modelnames = ""){
   return(OutputPlot)
 }
 
-pdf(file="CoefficientPlot_4August2014.pdf")
+pdf(file="CoefficientPlot_2October2015.pdf")
 CoefficientPlot(graphmodels, modelnames=c("Species Richness", "Taxonomic Diversity", "Trait Diversity"))
 dev.off()
 
@@ -312,12 +280,9 @@ dev.off()
 # Examine relationship between carbon storage and diversity within continents
 summary(lm(Mdata$CT.median[Mdata$Continent=="Africa"] ~ Mdata$V.Cstorage2[Mdata$Continent=="Africa"]))
 summary(lm(Mdata$CT.median[Mdata$Continent=="America"] ~ Mdata$V.Cstorage2[Mdata$Continent=="America"]))
-summary(lm(Mdata$CT.median[Mdata$Continent=="Asia"] ~ Mdata$V.Cstorage2[Mdata$Continent=="Asia"]))
 
 summary(lm(Mdata$CT.FDisMedian[Mdata$Continent=="Africa"] ~ Mdata$V.Cstorage2[Mdata$Continent=="Africa"]))
 summary(lm(Mdata$CT.FDisMedian[Mdata$Continent=="America"] ~ Mdata$V.Cstorage2[Mdata$Continent=="America"]))
-summary(lm(Mdata$CT.FDisMedian[Mdata$Continent=="Asia"] ~ Mdata$V.Cstorage2[Mdata$Continent=="Asia"]))
 
 summary(lm(Mdata$Shannon.Index[Mdata$Continent=="Africa"] ~ Mdata$V.Cstorage2[Mdata$Continent=="Africa"]))
 summary(lm(Mdata$Shannon.Index[Mdata$Continent=="America"] ~ Mdata$V.Cstorage2[Mdata$Continent=="America"]))
-summary(lm(Mdata$Shannon.Index[Mdata$Continent=="Asia"] ~ Mdata$V.Cstorage2[Mdata$Continent=="Asia"]))
